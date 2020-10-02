@@ -1,31 +1,37 @@
-A full-on OBS score tracking script.
+A full-on OBS custom browser overlay script.
 
-The script deploys a local containerized Flask webapp that shows the score (for use as an OBS browser source). Clicking a score updates them across all browsers (includign the OBS browser source). With this, you can update your score for your viewers in real time using any android, iphone, computer, or tablet on the OBS-computer network.
+The script deploys a local containerized Flask webapp that provides a number of customizable views suitable for use as browser overlays within OBS or other streaming tool. 
+* shows wins/losses for customizable team names (i.e. crew/impostor, cops/robbers, etc.)
+* timer with pause and reset
 
-![Score Card Browser Source Screenshot](https://raw.githubusercontent.com/Miscolored/obs-score-card-app/master/img/screenshot.PNG)
+You can update these views for your viewers in real time using any android, iphone, computer, or tablet on the OBS-computer network, or from your stream tool's custom browser dock.
+
+![Score Card Browser Source Screenshot](https://raw.githubusercontent.com/Miscolored/obs-browser-source/main/img/screenshot.PNG)
+
 
 # Usage
-1. Once deployed, the script launches a containerized webapp that can be used to control the score shown
-1. Use a web browser to increment or reset scores based on your wins/losses in all kinds of games, like Among Us, CSGO, etc.
+1. Once deployed, the script launches a containerized webapp that hosts the views and their controls
+1. Use a web browser to increment or reset scores based on your wins/losses in all kinds of games, like Among Us, CSGO, etc. or to pause and restart timers.
 
 # Install/Deploy
 ## Prerequisites
 1. Windows 10 (tested on 1909 build 18363.1082, Linux/MacOS users should be fine with similar prereqs))
 1. Python 3.6 (tested on 3.6.7)
 1. Docker (tested on 19.03.12)
-1. OBS (tested on OBS Studio 25.0.8)
+1. OBS (tested on OBS Studio 25.0.8+)
 
-## Start the score-card plugin
+## Start the bowser source plugin
 1. Clone or download the contents of this repo
 1. Open OBS Tools>Scripts>
 1. On the Python Settings tab, ensure you have a Python 3.6 selected (OBS limitation)
 1. On the Scripts tab select +
-1. Select score-card-obs-script.py
+1. Select obs-browser-source.py
 1. Add Scores To Track appropriate for your game (i.e. crew, impostor or cops, robbers)
 1. Select Fonts, and Colors (note the Score Font options are your system fonts, and may not render as expected across devices (including your OBS browser source))
-1. Click Deploy Score Card Server
+1. Click Deploy Browser Source Server
 1. Docker.exe popups may be visible for a second while the image is built and container started)
 
+# Score Card
 ## Adding the scorecard as an overlay in OBS
 1. Once deployed, create a new browser source with the following information
   * Local file, Use customer frame rate, Control audio via OBS, Shutdown source when not visible: uncheck
@@ -57,6 +63,9 @@ You can view and update the score card from any browser.
 1. Click Remove Score Card Server (this will delete the container and image created during deployment)
 1. Docker.exe command windows may pop up for a second while docker tears down the container and removes the image.
 
+# Stopwatch
+To use the Stopwatch feature, follow the steps for Score Card, but replace score-card in the URL with stopwatch.
+
 # Logs
 The plugin writes some log information to the OBS log, which can be accessed through OBS via Help>Log Files>View Current Log
 The app writes some log information to a logfile on the container called score-card.log, which can be accessed through `docker exec -it score-card cat score-card.log`
@@ -75,11 +84,4 @@ Open an issue if you'd like me to add a feature or fix a bug.
 Open a PR if you've added or fixed something, or just fork.
 
 # Feature Roadmap Ideas and TODOs
-1. Improve logging
-1. Add ties
-1. Load saved configurations
-1. Create browser source
-  1. Tailor browser source based on configuration
-1. Alexa integration
-1. Cloud hosting
-1. Persistent (i.e. all-time) scores
+Features requests should be captured as issues on the project's repository at [https://github.com/Miscolored/obs-browser-source]

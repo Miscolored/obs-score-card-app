@@ -18,17 +18,18 @@ color = {
 props = None
 
 def obslog(lvl, msg):
-    obs.blog(lvl, "SCORE_CARD_SCRIPT: " + msg)
+    obs.blog(lvl, "BROWSER_SOURCE_SCRIPT: " + msg)
 
 ### UTILITY FUNCTIONS ###
-def populate_score_card_ini():
+def populate_browser_source_ini():
     # TODO check if we are using a saved configuration
     config = configparser.ConfigParser(allow_no_value=True)
     config.optionxform = str
     config['NAMES'] = dict.fromkeys(score_names, None)
     config['FONT'] = font
     config['COLOR'] = color
-    with open(os.path.join(os.path.dirname(__file__), 'config', 'score_card.ini'), 'w') as configfile:
+    config_path = 'browser_source.ini'
+    with open(os.path.join(os.path.dirname(__file__), 'config', config_path), 'w') as configfile:
         config.write(configfile)
 
 ### IMAGE HELPERS
@@ -36,8 +37,8 @@ def image_exists(image):
     return image in subprocess.run("docker images --format \"{{.Repository }}:{{.Tag }}\"", \
             stdout=subprocess.PIPE, universal_newlines=True).stdout
 
-def build_score_card_image():
-    build = subprocess.run('docker build --rm \"' + os.path.dirname(__file__) + '\" -t score-card:latest', \
+def build_browser_source_image():
+    build = subprocess.run('docker build --rm \"' + os.path.dirname(__file__) + '\" -t browsersource:latest', \
         stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
     return build.stdout, build.stderr
 
@@ -51,8 +52,8 @@ def container_exists(container):
     return container in subprocess.run('docker ps -a --format \"{{.Names}}\"', \
         stdout=subprocess.PIPE, universal_newlines=True).stdout
 
-def start_score_card_container():
-    run = subprocess.run('docker run -d --name score-card -p 5000:5000 score-card:latest', \
+def start_browser_source_container():
+    run = subprocess.run('docker run -d --name browser-source -p 5000:5000 browsersource:latest', \
         stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
     return run.stdout, run.stderr
 
@@ -64,47 +65,47 @@ def remove_container(container):
 
 
 ### BUTTON HANDLERS
-def deploy_score_card_server(prop, props):
-    remove_score_card_server(None, None)
-    obslog(obs.LOG_INFO, "deploy_score_card_server")
-    populate_score_card_ini()
-    if image_exists('score-card:latest'):
-        obslog(obs.LOG_INFO, "score-card image found")
-        obslog(obs.LOG_INFO, "launching score-card container")
-        run = start_score_card_container()
+def deploy_browser_source_server(prop, props):
+    remove_browser_source_server(None, None)
+    obslog(obs.LOG_INFO, "deploy_browser_source_server")
+    populate_browser_source_ini()
+    if image_exists('browsersource:latest'):
+        obslog(obs.LOG_INFO, "browser-source image found")
+        obslog(obs.LOG_INFO, "launching browser-source container")
+        run = start_browser_source_container()
         obslog(obs.LOG_INFO, "rnstdout: " + run[0] + "; runstderr: " +run[1])
     else:
-        build = build_score_card_image()
+        build = build_browser_source_image()
         obslog(obs.LOG_INFO, "buildstdout: " + build[0] + "; buildstderr: " + build[1])
         
         wait_limit = 10
         while True:
-            if image_exists('score-card:latest'):
-                obslog(obs.LOG_INFO, "score-card image built")
-                obslog(obs.LOG_INFO, "launching score-card container")
-                run = start_score_card_container()
+            if image_exists('browsersource:latest'):
+                obslog(obs.LOG_INFO, "browser-source image built")
+                obslog(obs.LOG_INFO, "launching browser-source container")
+                run = start_browser_source_container()
                 obslog(obs.LOG_INFO, "runstdout: " + run[0] + "; runstderr: " + run[1])
                 break
             else:
-                obslog(obs.LOG_INFO, "score-card image not found")
+                obslog(obs.LOG_INFO, "browser-source image not found")
                 time.sleep(2)
                 wait_limit -= 1
                 if wait_limit == 0:
-                    obslog(obs.LOG_ERROR, "unable to start score-card container")
+                    obslog(obs.LOG_ERROR, "unable to start browser-source container")
     #TODO create browser source, if desired
-    obslog(obs.LOG_INFO,"exiting deploy_score_card_server")
+    obslog(obs.LOG_INFO,"exiting deploy_browser_source_server")
 
-def remove_score_card_server(prop, props):
-    obslog(obs.LOG_INFO, "remove_score_card_server")
-    if container_exists('score-card'):
+def remove_browser_source_server(prop, props):
+    obslog(obs.LOG_INFO, "remove_browser_source_server")
+    if container_exists('browser-source'):
         obslog(obs.LOG_INFO, "removing containers")
-        remove = remove_container('score-card')
+        remove = remove_container('browser-source')
         obslog(obs.LOG_INFO, "remove_container stdout: " + remove[0] + "; removestderr: " + remove[1])
-    if image_exists('score-card:latest'):
+    if image_exists('browsersource:latest'):
         obslog(obs.LOG_INFO, "removing image")
-        remove = remove_image('score-card:latest')
+        remove = remove_image('browsersource:latest')
         obslog(obs.LOG_INFO, "remove_image stdout: " + remove[0] + "; removestderr: " + remove[1])
-    obslog(obs.LOG_INFO, "exiting remove_score_card_server")
+    obslog(obs.LOG_INFO, "exiting remove_browser_source_server")
 
 
 
@@ -118,8 +119,8 @@ def script_properties():
     obs.obs_properties_add_font(props, "font", "Scores Font")
     obs.obs_properties_add_color(props, "fgcolor", "Text Color")
     obs.obs_properties_add_color(props, "bgcolor", "Background Color")
-    obs.obs_properties_add_button(props, "deploy", "Deploy Score Card Server", deploy_score_card_server)
-    obs.obs_properties_add_button(props, "remove", "Remove Score Card Server", remove_score_card_server)
+    obs.obs_properties_add_button(props, "deploy", "Deploy Browser Source Server", deploy_browser_source_server)
+    obs.obs_properties_add_button(props, "remove", "Remove Browser Source Server", remove_browser_source_server)
     obslog(obs.LOG_INFO, "properties loaded")
     #TODO checkbox to add to create browser source
     #TODO browser source name
@@ -157,7 +158,7 @@ def script_update(settings):
 
 def script_unload():
     obslog(obs.LOG_INFO, "script_unload")
-    remove_score_card_server(None, None)
+    remove_browser_source_server(None, None)
 
 def script_load(_):
     obslog(obs.LOG_INFO, "script_onload")
