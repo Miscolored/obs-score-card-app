@@ -2,7 +2,7 @@ A full-on OBS custom browser overlay script.
 
 The script deploys a local containerized Flask webapp that provides a number of customizable views suitable for use as browser overlays within OBS or other streaming tool. 
 * shows wins/losses for customizable team names (i.e. crew/impostor, cops/robbers, etc.)
-* timer with pause and reset
+* stopwatch with pause and reset
 
 You can update these views for your viewers in real time using any android, iphone, computer, or tablet on the OBS-computer network, or from your stream tool's custom browser dock.
 
@@ -11,7 +11,7 @@ You can update these views for your viewers in real time using any android, ipho
 
 # Usage
 1. Once deployed, the script launches a containerized webapp that hosts the views and their controls
-1. Use a web browser to increment or reset scores based on your wins/losses in all kinds of games, like Among Us, CSGO, etc. or to pause and restart timers.
+1. Use a web browser to increment or reset scores based on your wins/losses in all kinds of games, like Among Us, CSGO, etc. or to pause and restart a stopwatch.
 
 # Install/Deploy
 ## Prerequisites

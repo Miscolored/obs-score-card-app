@@ -62,46 +62,6 @@ def convert_font(fontobs):
         'strikethrough': int(fontobs['flags']) & 8
     }
 
-def scoreemit():
-    socketio.emit('update', json.dumps(make_scores_dict()))
-
-@app.route('/')
-def menu():
-    return redirect(url_for('score_card'))
-
-@app.route('/score-card')
-def score_card():
-    return render_template('scores.html')
-
-@socketio.on('client_connected')
-def score_card_connect(message):
-    setup = make_scores_dict()
-    setup.update(make_config_dict())
-    socketio.emit('setup', json.dumps({'setup': setup}))
-
-@socketio.on('win')
-def increment_win(data):
-    app.logger.error("SCORE_CARD: received win from " + str(data))
-    for idx in range(len(scores)):
-        if scores[idx].id == data["id"]:
-            scores[idx].increment_win()
-    scoreemit()
-
-@socketio.on('loss')
-def increment_loss(data):
-    app.logger.error("SCORE_CARD: received loss from " + str(data))
-    for idx in range(len(scores)):
-        if scores[idx].id == data["id"]:
-            scores[idx].increment_loss()
-    scoreemit()
-
-@socketio.on('reset')
-def reset():
-    app.logger.error("SCORE_CARD: received reset")
-    for idx in range(len(scores)):
-        scores[idx].reset()
-    scoreemit()
-
 def setup():
     handler = RotatingFileHandler('score-card.log', maxBytes=10000, backupCount=1)
     handler.setLevel(logging.INFO)
@@ -114,6 +74,65 @@ def setup():
     scores = tuple([Score(name = score) for score in config['NAMES'].keys()])
     font = convert_font(config['FONT'])
     color = convert_colors(config['COLOR'])
+
+
+@app.route('/')
+def menu():
+    return redirect(url_for('score_card'))
+
+### SCORE CARD
+def score_emit():
+    socketio.emit('score_update', json.dumps(make_scores_dict()))
+
+@app.route('/score-card')
+def score_card():
+    return render_template('scores.html')
+
+@socketio.on('score_client_connected')
+def score_card_connect(message):
+    setup = make_scores_dict()
+    setup.update(make_config_dict())
+    socketio.emit('score_setup', json.dumps({'setup': setup}))
+
+@socketio.on('win')
+def increment_win(data):
+    app.logger.error("SCORE_CARD: received win from " + str(data))
+    for idx in range(len(scores)):
+        if scores[idx].id == data["id"]:
+            scores[idx].increment_win()
+    score_emit()
+
+@socketio.on('loss')
+def increment_loss(data):
+    app.logger.error("SCORE_CARD: received loss from " + str(data))
+    for idx in range(len(scores)):
+        if scores[idx].id == data["id"]:
+            scores[idx].increment_loss()
+    score_emit()
+
+@socketio.on('score_reset')
+def reset():
+    app.logger.error("SCORE_CARD: received reset")
+    for idx in range(len(scores)):
+        scores[idx].reset()
+    score_emit()
+
+### STOPWATCH
+def stopwatch_emit(button):
+    socketio.emit('stopwatch_update', json.dumps({'button': button}))
+
+@app.route('/stopwatch')
+def stopwatch():
+    return render_template('stopwatch.html')
+
+@socketio.on('stopwatch_client_connected')
+def score_card_connect(message):
+    socketio.emit('stopwatch_setup', json.dumps({'setup': make_config_dict()}))
+
+@socketio.on('stopwatch_button')
+def stopwatch_button(data):
+    app.logger.error(data["button"])
+    return stopwatch_emit(data["button"])
 
 if __name__ == '__main__':
     setup()

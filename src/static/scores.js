@@ -2,12 +2,12 @@ $(document).ready(function(){
     //connect to the socket server.
     var socket = io()
     socket.on('connect', function() {
-        socket.emit('client_connected', {data: 'connected'});
+        socket.emit('score_client_connected', {data: 'connected'});
 
     });
 
     //recieve first connection from server
-    socket.on('setup', function(msg) {
+    socket.on('score_setup', function(msg) {
         let config = JSON.parse(msg).setup.config;
         let style = {}
         style['color'] = config.fgcolor
@@ -60,7 +60,7 @@ $(document).ready(function(){
     });
 
     //receive update from server
-    socket.on('update', function(msg) {
+    socket.on('score_update', function(msg) {
         let scores = JSON.parse(msg).scores;
         scores.forEach(function(score) {
             for (let field in score) {
@@ -77,6 +77,6 @@ $(document).ready(function(){
     });
 
     $('#reset').click(function(){
-        socket.emit('reset');
+        socket.emit('score_reset');
     });
 });
