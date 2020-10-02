@@ -109,7 +109,7 @@ def setup():
 
     config = configparser.ConfigParser(allow_no_value=True, default_section='DEFAULT')
     config.optionxform = str
-    config.read('./config/score_card.ini')
+    config.read('./config/browser_source.ini')
     global scores, font, color
     scores = tuple([Score(name = score) for score in config['NAMES'].keys()])
     font = convert_font(config['FONT'])
