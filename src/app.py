@@ -37,7 +37,7 @@ def get_highlight_color(rgbhex):
     app.logger.error(str(rgbhex))
     rgbfloat = list(map(lambda x: int(x, 16) / 255, rgbhex))
     hls = list(colorsys.rgb_to_hls(rgbfloat[0], rgbfloat[1], rgbfloat[2]))
-    hls[0] = min(1, max(hls[0] * 1.25, hls[0] + 0.15))
+    hls[1] = min(1, max(hls[0] * 1.25, hls[0] + 0.15))
     rgbfloat = colorsys.hls_to_rgb(hls[0], hls[1], hls[2])
     return list(map(lambda x: hex(ceil(255 * x))[2:], rgbfloat))
 

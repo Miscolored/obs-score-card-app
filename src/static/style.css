@@ -34,10 +34,8 @@ td {
     pointer-events: none
 }
 
-/* StopWatch*/
+/* Stopwatch*/
 #stopwatchContainer {
-    font-family: 'Source Sans Pro', sans-serif;
-    font-weight: 300;
     width:700px;
     margin:20px auto;
     min-height: 60px;
@@ -47,21 +45,8 @@ td {
     float:left;
     width: 54%;
     padding: 20px 0;
-    font-size: 24px;
     text-align:center;
-    color: #fff;
-    background: #A90000;
     cursor: pointer
   }
   .stopwatchButton {
-    background: #550000;
-    color: white;
     width:14.9%;
-    border-left: 1px solid #990000;
-  }
-  .stopwatchButton:hover {
-    background: #CC0000;
-  }
-  .lighter {
-    background: #4d9067
-  }
