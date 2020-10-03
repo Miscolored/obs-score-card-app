@@ -40,13 +40,14 @@ td {
     margin:20px auto;
     min-height: 60px;
     border-top:0px;
-  }
+}
 #stopwatch, .stopwatchButton {
     float:left;
     width: 54%;
     padding: 20px 0;
     text-align:center;
     cursor: pointer
-  }
+}
   .stopwatchButton {
     width:14.9%;
+}

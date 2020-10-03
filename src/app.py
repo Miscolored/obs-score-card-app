@@ -137,3 +137,4 @@ def stopwatch_button(data):
 if __name__ == '__main__':
     setup()
     app.run(debug=False, host='0.0.0.0')
+    app.add_url_rule('/favicon.ico',  redirect_to=url_for('static', filename='favicon.ico'))

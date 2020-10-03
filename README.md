@@ -68,7 +68,7 @@ To use the Stopwatch feature, follow the steps for Score Card, but replace score
 
 # Logs
 The plugin writes some log information to the OBS log, which can be accessed through OBS via Help>Log Files>View Current Log
-The app writes some log information to a logfile on the container called score-card.log, which can be accessed through `docker exec -it score-card cat score-card.log`
+The app writes some log information to a logfile on the container called score-card.log, which can be accessed through `docker exec -it browser-source cat obs-browser-source.log`
 
 # Troubleshooting
 **Host not found or 404 errors when accessing score-card app (local)**

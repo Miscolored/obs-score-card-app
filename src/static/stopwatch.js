@@ -102,7 +102,8 @@ $(document).ready(function(){
     }
 
     function pauseStopwatch(){
-        if (!timer.paused && timer.difference) {
+        if (!timer.difference) {
+        } else if (!timer.paused) {
             clearInterval(timer.tInterval);
             timer.savedTime = timer.difference;
             timer.paused = 1;

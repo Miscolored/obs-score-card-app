@@ -28,7 +28,6 @@ $(document).ready(function(){
 
 
         let scores = JSON.parse(msg).setup.scores;
-        console.log(scores);
         var table = $('<table/>');
         scores.forEach(function(score) {
             var row = $('<tr/>');
