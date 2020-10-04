@@ -1,6 +1,6 @@
 #!python
 
-import configparser, json, os, subprocess, time, obspython as obs
+import configparser, json, os, shutil, subprocess, time, obspython as obs
 
 ### GLOBALS / DEFAULTS
 props = None
@@ -10,12 +10,16 @@ def obslog(lvl, msg):
     obs.blog(lvl, "BROWSER_SOURCE_SCRIPT: " + msg)
 
 ### UTILITY FUNCTIONS ###
-def populate_browser_source_file():
-    # TODO Number1 check if we are using a saved configuration
-    global settings
-    config_path = 'browser_source.json'
-    if not obs.obs_data_save_json_safe(settings, os.path.join(os.path.dirname(__file__), 'config', 'browser_source.json'), 'tmp', 'backup'):
-        obslog(obs.LOG_ERROR, "unable to create config save")
+def populate_browser_source_file(user_config_path):
+    if user_config_path == None:
+        obslog(obs.LOG_INFO, "Deploying as configured")
+        global settings
+        if not obs.obs_data_save_json_safe(settings, os.path.join(os.path.dirname(__file__), 'config', 'browser_source.json'), 'tmp', 'backup'):
+            obslog(obs.LOG_ERROR, "unable to create config save")
+    else:
+        obslog(obs.LOG_INFO, "Deploying with saved configuration")
+        shutil.copyfile(os.path.join(os.path.dirname(__file__), 'config', 'browser_source.json'), os.path.join(os.path.dirname(__file__), 'config', 'browser_source.json.backup'))
+        shutil.copyfile(user_config_path, os.path.join(os.path.dirname(__file__), 'config', 'browser_source.json'))
     
 ### IMAGE HELPERS
 def image_exists(image):
@@ -53,12 +57,24 @@ def remove_container(container):
 def deploy_browser_source_server(prop, props):
     remove_browser_source_server(None, None)
     obslog(obs.LOG_INFO, "deploy_browser_source_server")
-
-    if obs.obs_data_get_bool(settings, 'use_user_config') and not obs.obs_data_get_string(settings, 'user_config'):
-        obslog(obs.LOG_WARNING, "Cannot deploy, no user config path specified")
-        return
-    
-    populate_browser_source_file()
+    isUserConfig = obs.obs_data_get_bool(settings, 'use_user_config')
+    userConfigPath = obs.obs_data_get_string(settings, 'user_config')
+    if isUserConfig:
+        if not userConfigPath:
+            obslog(obs.LOG_WARNING, "Cannot deploy, no user config path specified")
+            raise Exception("Unable to deploy container, selected use saved config but not path specified")
+        try:
+            with open(userConfigPath, errors = 'replace') as f:
+                json.load(f)
+        except json.JSONDecodeError:
+            obslog(obs.LOG_ERROR, "Invalid JSON: " + userConfigPath)
+            raise
+        except OSError:
+            obslog(obs.LOG_ERROR, "Unable to open " + userConfigPath)
+            raise
+        populate_browser_source_file(userConfigPath)
+    else:
+        populate_browser_source_file(None)
     if image_exists('browsersource:latest'):
         obslog(obs.LOG_INFO, "browser-source image found")
         obslog(obs.LOG_INFO, "launching browser-source container")
@@ -98,20 +114,24 @@ def remove_browser_source_server(prop, props):
     obslog(obs.LOG_INFO, "exiting remove_browser_source_server")
 
 
-def is_user_config(props, prop, settings):
-    if settings:
-        config = obs.obs_data_get_json(settings)
+def is_user_config(props, prop, data):
+    if data:
+        config = obs.obs_data_get_json(data)
         configjson = json.loads(str(config))
         del(config)
-    isUserConfig = 'use_user_config' in configjson.keys() and configjson['use_user_config']
-    for a_prop in ('score_names', 'font', 'fgcolor', 'bgcolor'):
-        thisprop = obs.obs_properties_get(props, a_prop)
-        obs.obs_property_set_visible(thisprop, not isUserConfig)
-        del(thisprop)
-    config_path_property = obs.obs_properties_get(props, 'user_config')
-    obs.obs_property_set_visible(config_path_property, isUserConfig)
+        isUserConfig = 'use_user_config' in configjson.keys() and configjson['use_user_config']
+        if isUserConfig:
+            global settings
+            settings = configjson
+        else:
+            for a_prop in ('score_names', 'font', 'fgcolor', 'bgcolor'):
+                thisprop = obs.obs_properties_get(props, a_prop)
+                obs.obs_property_set_visible(thisprop, not isUserConfig)
+                del(thisprop)
+            config_path_property = obs.obs_properties_get(props, 'user_config')
+            obs.obs_property_set_visible(config_path_property, isUserConfig)
 
-    del(config_path_property)
+            del(config_path_property)
     return True
 
 ### OBSPYTHON SCRIPT FUNCTIONS
@@ -121,7 +141,7 @@ def script_properties():
     checkbox = obs.obs_properties_add_bool(props, "use_user_config", "Use Saved Config")
     obs.obs_property_set_modified_callback(checkbox, is_user_config)
     del(checkbox)
-    obs.obs_properties_add_path(props, "user_config", "Saved Config Path", obs.OBS_PATH_FILE, "*.ini", os.path.join(os.path.dirname(__file__), 'config'))
+    obs.obs_properties_add_path(props, "user_config", "Saved Config Path", obs.OBS_PATH_FILE, "*.json", os.path.join(os.path.dirname(__file__), 'config'))
     obs.obs_properties_add_editable_list(props, "score_names", "Scores To Track", obs.OBS_EDITABLE_LIST_TYPE_STRINGS, "", "")
     obs.obs_properties_add_font(props, "font", "Scores Font")
     obs.obs_properties_add_color(props, "fgcolor", "Text Color")
@@ -133,11 +153,6 @@ def script_properties():
     #TODO checkbox to add to create browser source
     #TODO browser source name
     return props
-
-def script_update(data):
-    global settings
-    obslog(obs.LOG_INFO, "script_update")
-    obs.obs_data_apply(settings, data)
 
 def script_unload():
     obslog(obs.LOG_INFO, "script_unload")

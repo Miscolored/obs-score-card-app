@@ -13,5 +13,6 @@
         "style": "Regular"
     },
     "bgcolor": 4278190080,
-    "fgcolor": 4294967295
+    "fgcolor": 4294967295,
+    "use_user_config": false
 }
