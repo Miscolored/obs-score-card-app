@@ -2,46 +2,49 @@ import json
 
 class Score():
     """
-    Holds the wins and losses
+    Holds the numbers for scores, like win/loss/tie
     """
     
-    def __init__(self, name = "noname"):
+    def __init__(self, name = "noname", score_count = "2"):
         # order of object variables matters because we render json with vars()
         self.name = name
-        self.win = 0
-        self.loss = 0
+        self.score_count = score_count
+        self.scores = [0] * self.score_count
         self.id = id(self)
 
     def emit(self):
         return {
             'name': self.name,
-            'win': self.win,
-            'loss': self.loss
+            'id': self.id,
+            'scores': self.scores
         }
 
-    def increment_win(self):
-        self.win += 1
+    def increment_number(self, idx):
+        if idx > 0 and idx < self.score_count:
+            self.scores[idx] += 1
+        else:
+            return None
 
-    def decrement_win(self):
-        self.win -= 1
-
-    def increment_loss(self):
-        self.loss += 1
-
-    def decrement_loss(self):
-        self.loss -= 1
+    def decrement_number(self, idx):
+        if idx > 0 and idx < self.score_count:
+            self.scores[idx] -= 1
+        else:
+            return None
 
     def reset(self):
-        self.win, self.loss = 0, 0
+        self.scores = [0] * self.score_count
 
     def get_name(self):
         return self.name
 
-    def get_win(self):
-        return self.win
+    def get_scores(self):
+        return self.scores
 
-    def get_loss(self):
-        return self. loss
+    def get_score(self, idx):
+        if idx > 0 and idx < self.score_count:
+            return self.scores[idx]
+        else:
+            return None
 
     def get_id(self):
         return self.id

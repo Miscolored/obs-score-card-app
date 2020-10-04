@@ -28,31 +28,55 @@ $(document).ready(function(){
 
 
         let scores = JSON.parse(msg).setup.scores;
-        var table = $('<table/>');
+        var table = $('#scoretable');
         scores.forEach(function(score) {
-            var row = $('<tr/>');
-            for (let field in score) {
-                if (field == 'id') {
-                    continue;
-                }
-                row.append(
-                    $('<td/>')
-                    .attr("id", score.id + field)
+            var row = $(document.createElement('tr'));
+            /* Name */
+            row.append(
+                $('<td/>')
+                    .addClass('name')
                     .css(style)
                     .css('background-color', config.bgcolor)
-                    .hover(function() {
-                        if ( field != 'name') {
+                    .text(score.name)
+            );
+            /* Scores */
+            for (i = 0; i < score.scores.length; i++) {
+                var scoreblock = $(document.createElement('td'));
+                scoreblock.attr('class', 'score')
+                scoreblock.append(
+                    $('<div/>')
+                        .addClass('decrement')
+                        .css(style)
+                        .css('background-color', config.bgcolor)
+                        .hover(function() {
+                            $(this).css("background-color", config.llcolor);
+                        }, function() {
+                            $(this).css("background-color", config.bgcolor);
+                        })
+                        .click(function() { socket.emit("score", {'command': 'decrement', 'id': score.id, 'idx': i}); })
+                );
+                scoreblock.append(
+                    $('<div/>')
+                        .addClass('increment')
+                        .css(style)
+                        .css('background-color', config.bgcolor)
+                        .hover(function() {
                             $(this).css("background-color", config.hlcolor);
-                        }
-                    }, function() {
-                        $(this).css("background-color", config.bgcolor);
-                    })
-                    .text(score[field])
-                    .click(function() { socket.emit(field, {'id': score.id}); })
-                    )
-                }
-                table.append(row);
-            });
+                        }, function() {
+                            $(this).css("background-color", config.bgcolor);
+                        })
+                        .click(function() { socket.emit("score", {'command': 'increment', 'id': score.id, 'idx': i}) })
+                );
+                scoreblock.append(
+                    $('<div/>')
+                        .addClass('text')
+                        .css(style)
+                        .text(score.scores[i])
+                );
+                row.append(scoreblock);
+            }  
+            table.append(row);
+        });
             
         $('#table').html("");
         $('#table').html(table);

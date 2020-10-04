@@ -16,8 +16,7 @@ font = {}
 color = {}
 
 def make_scores_dict():
-    j = tuple([vars(score) for score in scores])
-    return {'scores': j}
+    return {'scores': tuple([vars(score) for score in scores])}
 
 def make_config_dict():
     config = {}
@@ -41,14 +40,22 @@ def get_highlight_color(rgbhex):
     rgbfloat = colorsys.hls_to_rgb(hls[0], hls[1], hls[2])
     return list(map(lambda x: hex(ceil(255 * x))[2:], rgbfloat))
 
+def get_lowlight_color(rgbhex):
+    app.logger.error(str(rgbhex))
+    rgbfloat = list(map(lambda x: int(x, 16) / 255, rgbhex))
+    hls = list(colorsys.rgb_to_hls(rgbfloat[0], rgbfloat[1], rgbfloat[2]))
+    hls[1] = max(0, min(hls[0] * 0.75, hls[0] - 0.15))
+    rgbfloat = colorsys.hls_to_rgb(hls[0], hls[1], hls[2])
+    return list(map(lambda x: hex(ceil(255 * x))[2:], rgbfloat))
+
+
 def convert_colors(bg, fg):
     bgcolor = color_uint32_to_rgbhex(int(bg))
-    hlcolor = "#" + "".join(get_highlight_color(bgcolor))
-    bgcolor = "#" + "".join(bgcolor)
     return {
         'fgcolor': "#" + "".join(color_uint32_to_rgbhex(int(fg))),
-        'bgcolor': bgcolor,
-        'hlcolor': hlcolor
+        'bgcolor': "#" + "".join(bgcolor),
+        'hlcolor': "#" + "".join(get_highlight_color(bgcolor)),
+        'llcolor': "#" + "".join(get_lowlight_color(bgcolor))
     }
 
 def convert_font(fontobs):
@@ -70,8 +77,9 @@ def setup():
     with open('./config/browser_source.json') as f:
         config = json.load(f)
     global scores, font, color
-    #TODO #5 change number of scores to keep
-    scores = tuple([Score(name = score['value']) for score in config['score_names']])
+    
+    score_count = config['score_count']
+    scores = tuple([Score(score['value'], score_count) for score in config['score_names']])
     font = convert_font(config['font'])
     color = convert_colors(config['bgcolor'], config['fgcolor'])
 
@@ -94,20 +102,16 @@ def score_card_connect(message):
     setup.update(make_config_dict())
     socketio.emit('score_setup', json.dumps({'setup': setup}))
 
-@socketio.on('win')
-def increment_win(data):
-    app.logger.error("SCORE_CARD: received win from " + str(data))
+@socketio.on('score')
+def score(data):
+    id = data['id']
+    i = data['idx']
     for idx in range(len(scores)):
         if scores[idx].id == data["id"]:
-            scores[idx].increment_win()
-    score_emit()
-
-@socketio.on('loss')
-def increment_loss(data):
-    app.logger.error("SCORE_CARD: received loss from " + str(data))
-    for idx in range(len(scores)):
-        if scores[idx].id == data["id"]:
-            scores[idx].increment_loss()
+            if data['command'] == "increment":
+                scores[idx].increment_number(i)
+            if data['command'] == "decrement":
+                scores[idx].decrement_number(i)
     score_emit()
 
 @socketio.on('score_reset')
