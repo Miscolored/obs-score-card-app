@@ -108,12 +108,28 @@ def remove_browser_source_server(prop, props):
     obslog(obs.LOG_INFO, "exiting remove_browser_source_server")
 
 
+def is_user_config(props, prop, settings):
+    if settings:
+        config = obs.obs_data_get_json(settings)
+        configjson = json.loads(str(config))
+        del(config)
+    isUserConfig = 'use_user_config' in configjson.keys() and configjson['use_user_config']
+    for a_prop in ('score_names', 'font', 'fgcolor', 'bgcolor'):
+        thisprop = obs.obs_properties_get(props, a_prop)
+        obs.obs_property_set_visible(thisprop, not isUserConfig)
+        del(thisprop)
+    config_path_property = obs.obs_properties_get(props, 'user_config')
+    obs.obs_property_set_visible(config_path_property, isUserConfig)
+    del(config_path_property)
+    return True
 
 ### OBSPYTHON SCRIPT FUNCTIONS
 def script_properties():
     global props
     props = obs.obs_properties_create()
-    obs.obs_properties_add_bool(props, "use_user_config", "Use Saved Config")
+    checkbox = obs.obs_properties_add_bool(props, "use_user_config", "Use Saved Config")
+    obs.obs_property_set_modified_callback(checkbox, is_user_config)
+    del(checkbox)
     obs.obs_properties_add_path(props, "user_config", "Saved Config Path", obs.OBS_PATH_FILE, "*.ini", os.path.join(os.path.dirname(__file__), 'config'))
     obs.obs_properties_add_editable_list(props, "score_names", "Scores To Track", obs.OBS_EDITABLE_LIST_TYPE_STRINGS, "", "")
     obs.obs_properties_add_font(props, "font", "Scores Font")
@@ -122,6 +138,7 @@ def script_properties():
     obs.obs_properties_add_button(props, "deploy", "Deploy Browser Source Server", deploy_browser_source_server)
     obs.obs_properties_add_button(props, "remove", "Remove Browser Source Server", remove_browser_source_server)
     obslog(obs.LOG_INFO, "properties loaded")
+
     #TODO checkbox to add to create browser source
     #TODO browser source name
     return props
@@ -136,11 +153,7 @@ def script_update(settings):
         del(config)
 
         # Toggle visibility
-        # FIXME get visibility working
         isUserConfig = 'use_user_config' in configjson.keys() and configjson['use_user_config']
-        obs.obs_property_set_visible(obs.obs_properties_get(props, "user_config"), isUserConfig)
-        for prop in ('score_names', 'font', 'fgcolor', 'bgcolor'):
-            obs.obs_property_set_visible(obs.obs_properties_get(props, prop), not isUserConfig)
         if not isUserConfig:
             for key in configjson.keys():
                 if key == "score_names":
@@ -153,6 +166,9 @@ def script_update(settings):
                 elif key == "bgcolor":
                     bgcolor = configjson["bgcolor"]
                     color = { 'bgcolor': bgcolor, 'fgcolor': color['fgcolor']}
+        else:
+            pass
+            #TODO user config
     else:
         obslog(obs.LOG_INFO, "no setting in script_update?!")
 
