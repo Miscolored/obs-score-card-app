@@ -1,0 +1,17 @@
+{
+    "score_names": [
+        {
+            "hidden": false,
+            "selected": false,
+            "value": "Wins"
+        }
+    ],
+    "font": {
+        "face": "Sans Serif",
+        "flags" : 0,
+        "size": 14,
+        "style": "Regular"
+    },
+    "bgcolor": 4278190080,
+    "fgcolor": 4294967295
+}

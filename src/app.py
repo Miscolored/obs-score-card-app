@@ -41,12 +41,12 @@ def get_highlight_color(rgbhex):
     rgbfloat = colorsys.hls_to_rgb(hls[0], hls[1], hls[2])
     return list(map(lambda x: hex(ceil(255 * x))[2:], rgbfloat))
 
-def convert_colors(colorsobs):
-    bgcolor = color_uint32_to_rgbhex(int(colorsobs['bgcolor']))
+def convert_colors(bg, fg):
+    bgcolor = color_uint32_to_rgbhex(int(bg))
     hlcolor = "#" + "".join(get_highlight_color(bgcolor))
     bgcolor = "#" + "".join(bgcolor)
     return {
-        'fgcolor': "#" + "".join(color_uint32_to_rgbhex(int(colorsobs['fgcolor']))),
+        'fgcolor': "#" + "".join(color_uint32_to_rgbhex(int(fg))),
         'bgcolor': bgcolor,
         'hlcolor': hlcolor
     }
@@ -66,14 +66,15 @@ def setup():
     handler = RotatingFileHandler('score-card.log', maxBytes=10000, backupCount=1)
     handler.setLevel(logging.INFO)
     app.logger.addHandler(handler)
-
-    config = configparser.ConfigParser(allow_no_value=True, default_section='DEFAULT')
-    config.optionxform = str
-    config.read('./config/browser_source.ini')
+    config = None
+    with open('./config/browser_source.json') as f:
+        config = json.load(f)
+    #TODO #1 check use_user_config and load from that path.
     global scores, font, color
-    scores = tuple([Score(name = score) for score in config['NAMES'].keys()])
-    font = convert_font(config['FONT'])
-    color = convert_colors(config['COLOR'])
+    #TODO #5 change number of scores to keep
+    scores = tuple([Score(name = score['value']) for score in config['score_names']])
+    font = convert_font(config['font'])
+    color = convert_colors(config['bgcolor'], config['fgcolor'])
 
 
 @app.route('/')

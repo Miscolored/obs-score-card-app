@@ -3,35 +3,20 @@
 import configparser, json, os, subprocess, time, obspython as obs
 
 ### GLOBALS / DEFAULTS
-score_names = ['Score']
-font = {
-    'face': 'Sans Serif',
-    'flags': 0,
-    'size': 8,
-    'style': 'Regular'
-}
-color = {
-    'bgcolor': 4278190080, #default black
-    'fgcolor': 4294967295  #default white
-}
-
 props = None
+settings = obs.obs_data_create_from_json_file_safe(os.path.join(os.path.dirname(__file__), 'config', 'browser_source_default.json'), 'backup')
 
 def obslog(lvl, msg):
     obs.blog(lvl, "BROWSER_SOURCE_SCRIPT: " + msg)
 
 ### UTILITY FUNCTIONS ###
-def populate_browser_source_ini():
-    # TODO check if we are using a saved configuration
-    config = configparser.ConfigParser(allow_no_value=True)
-    config.optionxform = str
-    config['NAMES'] = dict.fromkeys(score_names, None)
-    config['FONT'] = font
-    config['COLOR'] = color
-    config_path = 'browser_source.ini'
-    with open(os.path.join(os.path.dirname(__file__), 'config', config_path), 'w') as configfile:
-        config.write(configfile)
-
+def populate_browser_source_file():
+    # TODO Number1 check if we are using a saved configuration
+    global settings
+    config_path = 'browser_source.json'
+    if not obs.obs_data_save_json_safe(settings, os.path.join(os.path.dirname(__file__), 'config', 'browser_source.json'), 'tmp', 'backup'):
+        obslog(obs.LOG_ERROR, "unable to create config save")
+    
 ### IMAGE HELPERS
 def image_exists(image):
     return image in subprocess.run("docker images --format \"{{.Repository }}:{{.Tag }}\"", \
@@ -68,7 +53,12 @@ def remove_container(container):
 def deploy_browser_source_server(prop, props):
     remove_browser_source_server(None, None)
     obslog(obs.LOG_INFO, "deploy_browser_source_server")
-    populate_browser_source_ini()
+
+    if obs.obs_data_get_bool(settings, 'use_user_config') and not obs.obs_data_get_string(settings, 'user_config'):
+        obslog(obs.LOG_WARNING, "Cannot deploy, no user config path specified")
+        return
+    
+    populate_browser_source_file()
     if image_exists('browsersource:latest'):
         obslog(obs.LOG_INFO, "browser-source image found")
         obslog(obs.LOG_INFO, "launching browser-source container")
@@ -120,6 +110,7 @@ def is_user_config(props, prop, settings):
         del(thisprop)
     config_path_property = obs.obs_properties_get(props, 'user_config')
     obs.obs_property_set_visible(config_path_property, isUserConfig)
+
     del(config_path_property)
     return True
 
@@ -143,34 +134,10 @@ def script_properties():
     #TODO browser source name
     return props
 
-def script_update(settings):
-    global score_names, font, color
+def script_update(data):
+    global settings
     obslog(obs.LOG_INFO, "script_update")
-    if settings:
-        config = obs.obs_data_get_json(settings)
-        obslog(obs.LOG_INFO, str(config))
-        configjson = json.loads(str(config))
-        del(config)
-
-        # Toggle visibility
-        isUserConfig = 'use_user_config' in configjson.keys() and configjson['use_user_config']
-        if not isUserConfig:
-            for key in configjson.keys():
-                if key == "score_names":
-                    score_names = [x["value"] for x in configjson["score_names"]]
-                elif key == "font":
-                    font = configjson["font"]
-                elif key == "fgcolor":
-                    fgcolor = configjson["fgcolor"]
-                    color = {'bgcolor': color['bgcolor'],'fgcolor': fgcolor}
-                elif key == "bgcolor":
-                    bgcolor = configjson["bgcolor"]
-                    color = { 'bgcolor': bgcolor, 'fgcolor': color['fgcolor']}
-        else:
-            pass
-            #TODO user config
-    else:
-        obslog(obs.LOG_INFO, "no setting in script_update?!")
+    obs.obs_data_apply(settings, data)
 
 def script_unload():
     obslog(obs.LOG_INFO, "script_unload")
