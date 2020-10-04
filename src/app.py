@@ -78,7 +78,7 @@ def setup():
 
 @app.route('/')
 def menu():
-    return redirect(url_for('score_card'))
+    return render_template('menu.html')
 
 ### SCORE CARD
 def score_emit():

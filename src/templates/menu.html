@@ -1,0 +1,18 @@
+<!doctype html>
+<head>
+    <title>OBS Browser Source Menu</title>
+    <link rel="stylesheet" href="../static/style.css">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost.com https://code.jquery.com https://cdnjs.cloudflare.com; media-src 'self'; img-src 'self';">
+
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <div id="menuContainer">
+        <a href="/stopwatch"><div class="menuButton">Stopwatch</div></a>
+        <a href="/score-card"><div class="menuButton">Score Card</div></a>
+    </div>
+</body>
+</html>

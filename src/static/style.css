@@ -1,3 +1,15 @@
+/* Menu */
+.menuButton {
+    color: white;
+    background-color: #4CAF50;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    min-width: 50px;
+}
+
 /* Scores */
 body {
     overflow: hidden;
@@ -48,6 +60,6 @@ td {
     text-align:center;
     cursor: pointer
 }
-  .stopwatchButton {
+.stopwatchButton {
     width:14.9%;
 }
