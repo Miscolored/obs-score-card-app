@@ -20,13 +20,13 @@ class Score():
         }
 
     def increment_number(self, idx):
-        if idx > 0 and idx < self.score_count:
+        if idx >= 0 and idx < self.score_count:
             self.scores[idx] += 1
         else:
             return None
 
     def decrement_number(self, idx):
-        if idx > 0 and idx < self.score_count:
+        if idx >= 0 and idx < self.score_count:
             self.scores[idx] -= 1
         else:
             return None
@@ -41,7 +41,7 @@ class Score():
         return self.scores
 
     def get_score(self, idx):
-        if idx > 0 and idx < self.score_count:
+        if idx >= 0 and idx < self.score_count:
             return self.scores[idx]
         else:
             return None

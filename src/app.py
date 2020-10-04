@@ -33,7 +33,7 @@ def color_uint32_to_rgbhex(coloruint32):
     return [r, g, b]
 
 def get_highlight_color(rgbhex):
-    app.logger.error(str(rgbhex))
+    app.logger.info(str(rgbhex))
     rgbfloat = list(map(lambda x: int(x, 16) / 255, rgbhex))
     hls = list(colorsys.rgb_to_hls(rgbfloat[0], rgbfloat[1], rgbfloat[2]))
     hls[1] = min(1, max(hls[0] * 1.25, hls[0] + 0.15))
@@ -41,7 +41,7 @@ def get_highlight_color(rgbhex):
     return list(map(lambda x: hex(ceil(255 * x))[2:], rgbfloat))
 
 def get_lowlight_color(rgbhex):
-    app.logger.error(str(rgbhex))
+    app.logger.info(str(rgbhex))
     rgbfloat = list(map(lambda x: int(x, 16) / 255, rgbhex))
     hls = list(colorsys.rgb_to_hls(rgbfloat[0], rgbfloat[1], rgbfloat[2]))
     hls[1] = max(0, min(hls[0] * 0.75, hls[0] - 0.15))
@@ -80,8 +80,10 @@ def setup():
     
     score_count = config['score_count']
     scores = tuple([Score(score['value'], score_count) for score in config['score_names']])
-    font = convert_font(config['font'])
-    color = convert_colors(config['bgcolor'], config['fgcolor'])
+    if 'font' in config.keys():
+        font = convert_font(config['font'])
+    if 'bgcolor' in config.keys() and 'fgcolor' in config.keys():
+        color = convert_colors(config['bgcolor'], config['fgcolor'])
 
 
 @app.route('/')
@@ -112,11 +114,12 @@ def score(data):
                 scores[idx].increment_number(i)
             if data['command'] == "decrement":
                 scores[idx].decrement_number(i)
+    app.logger.info(data)
     score_emit()
 
 @socketio.on('score_reset')
 def reset():
-    app.logger.error("SCORE_CARD: received reset")
+    app.logger.info("SCORE_CARD: received reset")
     for idx in range(len(scores)):
         scores[idx].reset()
     score_emit()
@@ -135,7 +138,7 @@ def score_card_connect(message):
 
 @socketio.on('stopwatch_button')
 def stopwatch_button(data):
-    app.logger.error(data["button"])
+    app.logger.info(data["button"])
     return stopwatch_emit(data["button"])
 
 if __name__ == '__main__':

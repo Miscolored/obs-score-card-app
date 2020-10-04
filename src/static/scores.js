@@ -29,6 +29,7 @@ $(document).ready(function(){
 
         let scores = JSON.parse(msg).setup.scores;
         var table = $('#scoretable');
+        table.empty()
         scores.forEach(function(score) {
             var row = $(document.createElement('tr'));
             /* Name */
@@ -40,7 +41,7 @@ $(document).ready(function(){
                     .text(score.name)
             );
             /* Scores */
-            for (i = 0; i < score.scores.length; i++) {
+            for (let idx = 0; idx < score.scores.length; idx++) {
                 var scoreblock = $(document.createElement('td'));
                 scoreblock.attr('class', 'score')
                 scoreblock.append(
@@ -53,7 +54,7 @@ $(document).ready(function(){
                         }, function() {
                             $(this).css("background-color", config.bgcolor);
                         })
-                        .click(function() { socket.emit("score", {'command': 'decrement', 'id': score.id, 'idx': i}); })
+                        .click(function() { socket.emit("score", {'command': 'decrement', 'id': score.id, 'idx': idx}); })
                 );
                 scoreblock.append(
                     $('<div/>')
@@ -65,13 +66,14 @@ $(document).ready(function(){
                         }, function() {
                             $(this).css("background-color", config.bgcolor);
                         })
-                        .click(function() { socket.emit("score", {'command': 'increment', 'id': score.id, 'idx': i}) })
+                        .click(function() { socket.emit("score", {'command': 'increment', 'id': score.id, 'idx': idx}) })
                 );
                 scoreblock.append(
                     $('<div/>')
                         .addClass('text')
+                        .attr('id', score.id + idx.toString())
                         .css(style)
-                        .text(score.scores[i])
+                        .text(score.scores[idx])
                 );
                 row.append(scoreblock);
             }  
@@ -86,14 +88,8 @@ $(document).ready(function(){
     socket.on('score_update', function(msg) {
         let scores = JSON.parse(msg).scores;
         scores.forEach(function(score) {
-            for (let field in score) {
-                switch(field) {
-                    case "name":
-                    case "id":
-                        break;
-                    default:
-                        $("#" + score.id + field).text(score[field].toString());
-                }
+            for (let idx = 0; idx < score.scores.length; idx++) {
+                $("#" + score.id + idx.toString()).text(score.scores[idx].toString());
             }
         });
 

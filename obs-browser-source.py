@@ -119,22 +119,22 @@ def remove_browser_source_server(prop, props):
 def is_user_config(props, prop, data):
     if data:
         config = obs.obs_data_get_json(data)
-        configjson = json.loads(str(config))
+        configjson = json.loads(config)
         del(config)
 
         isUserConfig = 'use_user_config' in configjson.keys() and configjson['use_user_config']
+        
+        for a_prop in ('score_names', 'score_count', 'font', 'fgcolor', 'bgcolor'):
+            thisprop = obs.obs_properties_get(props, a_prop)
+            obs.obs_property_set_visible(thisprop, not isUserConfig)
+            del(thisprop)
+        config_path_property = obs.obs_properties_get(props, 'user_config')
+        obs.obs_property_set_visible(config_path_property, isUserConfig)
+        del(config_path_property)
+
         if isUserConfig:
             global settings
-            settings = configjson
-        else:
-            for a_prop in ('score_names', 'score_count', 'font', 'fgcolor', 'bgcolor'):
-                thisprop = obs.obs_properties_get(props, a_prop)
-                obs.obs_property_set_visible(thisprop, not isUserConfig)
-                del(thisprop)
-            config_path_property = obs.obs_properties_get(props, 'user_config')
-            obs.obs_property_set_visible(config_path_property, isUserConfig)
-
-            del(config_path_property)
+            settings = data
 
     return True
 
