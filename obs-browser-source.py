@@ -57,6 +57,7 @@ def remove_container(container):
 def deploy_browser_source_server(prop, props):
     remove_browser_source_server(None, None)
     obslog(obs.LOG_INFO, "deploy_browser_source_server")
+
     isUserConfig = obs.obs_data_get_bool(settings, 'use_user_config')
     userConfigPath = obs.obs_data_get_string(settings, 'user_config')
     if isUserConfig:
@@ -75,6 +76,7 @@ def deploy_browser_source_server(prop, props):
         populate_browser_source_file(userConfigPath)
     else:
         populate_browser_source_file(None)
+
     if image_exists('browsersource:latest'):
         obslog(obs.LOG_INFO, "browser-source image found")
         obslog(obs.LOG_INFO, "launching browser-source container")
@@ -119,6 +121,7 @@ def is_user_config(props, prop, data):
         config = obs.obs_data_get_json(data)
         configjson = json.loads(str(config))
         del(config)
+
         isUserConfig = 'use_user_config' in configjson.keys() and configjson['use_user_config']
         if isUserConfig:
             global settings
@@ -132,6 +135,7 @@ def is_user_config(props, prop, data):
             obs.obs_property_set_visible(config_path_property, isUserConfig)
 
             del(config_path_property)
+
     return True
 
 ### OBSPYTHON SCRIPT FUNCTIONS

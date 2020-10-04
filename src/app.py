@@ -69,7 +69,6 @@ def setup():
     config = None
     with open('./config/browser_source.json') as f:
         config = json.load(f)
-    
     global scores, font, color
     #TODO #5 change number of scores to keep
     scores = tuple([Score(name = score['value']) for score in config['score_names']])
